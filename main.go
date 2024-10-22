@@ -1,12 +1,15 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"go-http-svc/docs"
 	"go-http-svc/models"
 	"go-http-svc/services"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -25,6 +28,36 @@ import (
 
 var db *gorm.DB
 var err error
+
+//go:embed user_template.xlsx
+var userTemplate []byte
+
+func extractTemplateIfNotExists() error {
+	// Define the path where the file should be extracted
+	uploadsDir := "uploads"
+
+	// Step 4.1: Check if the file already exists
+	filePath := filepath.Join(uploadsDir, "user_template.xlsx")
+	if _, err := os.Stat(filePath); err == nil {
+		fmt.Println("File already exists, no extraction needed.")
+		return nil
+	}
+
+	// Step 4.2: Create the uploads directory if it doesn't exist
+	err := os.MkdirAll(uploadsDir, fs.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to create uploads directory: %w", err)
+	}
+
+	// Step 4.3: Write the embedded file to the uploads directory
+	err = os.WriteFile(filePath, userTemplate, fs.ModePerm)
+	if err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	fmt.Println("File extracted successfully to", filePath)
+	return nil
+}
 
 // Initialize the MySQL database
 func initDB() {
@@ -49,6 +82,7 @@ func initDB() {
 // @in header
 // @description Provide your JWT token in the format: {your_token}
 func main() {
+	extractTemplateIfNotExists()
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
