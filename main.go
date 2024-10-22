@@ -292,6 +292,10 @@ func main() {
 		services.GetCatalogTrending(c, db)
 	})
 
+	router.GET("/:eid/stats/orders_users_rate", func(c *gin.Context) {
+		services.GetOrdersRateOfUsers(c, db)
+	})
+
 	// Start the server
 	PORT := os.Getenv("PORT")
 	fmt.Println("Server is running on port ", PORT)

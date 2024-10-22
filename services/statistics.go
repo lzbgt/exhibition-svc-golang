@@ -324,3 +324,34 @@ func GetItemsRateDistribution(c *gin.Context, db *gorm.DB) {
 
 	c.JSON(http.StatusOK, results)
 }
+
+// GetOrdersRateOfUsers godoc
+// @Summary Get orders rate of users
+// @Tags stats
+// @Security BearerAuth
+// @Produce json
+// @Param eid path int true "models.Exibition ID"
+// @Success 200  {object} map[string]interface{}
+// @Router /api/{eid}/stats/orders_users_rate [get]
+func GetOrdersRateOfUsers(c *gin.Context, db *gorm.DB) {
+	user, _ := c.Get("user")
+	eid, _ := strconv.Atoi(c.Param("eid"))
+	claims, _ := user.(*models.Claims)
+	if claims.Eid != 0 && claims.Eid != eid {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "mismatch eid"})
+		return
+	}
+
+	var rate float64
+	var orders int64
+	var users int64
+	db.Model(&models.ExAmount{}).Count(&orders)
+	db.Model(&models.ExUser{}).Count(&users)
+	if users == 0 {
+		c.JSON(http.StatusNotFound, map[string]float64{"rate": 0.0})
+		return
+	}
+	rate = float64(orders) / float64(users)
+
+	c.JSON(http.StatusOK, map[string]float64{"rate": rate})
+}
