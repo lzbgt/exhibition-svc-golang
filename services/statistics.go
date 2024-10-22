@@ -186,13 +186,17 @@ func GetTopNOrdersItems(c *gin.Context, db *gorm.DB) {
 	}
 
 	var results []struct {
-		Iid    int
+		ID     int
 		Name   string
-		Images json.RawMessage `json:"images" gorm:"type:json"`
 		Sum    int
+		Orders int
 	}
 
-	if result := db.Table("ex_amounts").Select("ex_amounts.iid, ex_items.name, ex_items.images, count(*) as sum").Joins("left join ex_items on ex_items.id=ex_amounts.iid").Group("ex_amounts.iid").Where("ex_amounts.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
+	// if result := db.Table("ex_amounts").Select("ex_amounts.iid, ex_items.name, ex_items.images, count(*) as sum").Joins("left join ex_items on ex_items.id=ex_amounts.iid").Group("ex_amounts.iid").Where("ex_amounts.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
+	// 	c.JSON(http.StatusNotFound, gin.H{"error": "amount not found"})
+	// 	return
+	// }
+	if result := db.Table("ex_users").Select("ex_users.id, ex_users.name, SUM(ex_amounts.amount) as sum, COUNT(ex_amounts.id) as orders").Joins("left join ex_amounts on ex_amounts.uid=ex_users.id").Group("ex_users.id").Where("ex_users.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "amount not found"})
 		return
 	}
