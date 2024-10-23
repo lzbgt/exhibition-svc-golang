@@ -305,10 +305,10 @@ func GetItemsRateDistribution(c *gin.Context, db *gorm.DB) {
 		SELECT 
 			CASE 
 				WHEN avg_score BETWEEN 7 AND 10 THEN '优秀' 
-				WHEN avg_score BETWEEN 4 AND 6 THEN '良好' 
-				WHEN avg_score BETWEEN 1 AND 3 THEN '一般' 
-			END AS category, 
-			COUNT(*) AS count
+				WHEN avg_score BETWEEN 4 AND 6.99 THEN '良好' 
+				WHEN avg_score BETWEEN 0 AND 3.99 THEN '一般' 
+			END AS category,
+			COUNT(iid) AS count
 		FROM (
 			SELECT iid, AVG(rate) AS avg_score
 			FROM ex_rates
@@ -316,8 +316,6 @@ func GetItemsRateDistribution(c *gin.Context, db *gorm.DB) {
 		) AS avg_scores
 		GROUP BY category
 	`).Scan(&results)
-
-	// Calculate the percentage for each category
 	for i := range results {
 		results[i].Percent = float64(results[i].Count) / float64(totalItems) * 100
 	}
@@ -345,8 +343,8 @@ func GetOrdersRateOfUsers(c *gin.Context, db *gorm.DB) {
 	var rate float64
 	var orders int64
 	var users int64
-	db.Model(&models.ExAmount{}).Count(&orders)
-	db.Model(&models.ExUser{}).Count(&users)
+	db.Model(&models.ExAmount{}).Where("eid=?", eid).Count(&orders)
+	db.Model(&models.ExUser{}).Where("eid=?", eid).Count(&users)
 	if users == 0 {
 		c.JSON(http.StatusNotFound, map[string]float64{"rate": 0.0})
 		return

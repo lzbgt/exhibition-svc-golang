@@ -78,14 +78,7 @@ func CreateExUser(c *gin.Context, db *gorm.DB) {
 	}
 	input.Eid = eid
 	user := models.ExUser{
-		ExUserInput: models.ExUserInput{
-			Eid:      input.Eid,
-			Title:    input.Title,
-			Uname:    input.Uname,
-			Password: input.Password,
-			Name:     input.Name,
-			Mobile:   input.Mobile,
-		},
+		ExUserInput: input,
 	}
 
 	if result := db.Create(&user); result.Error != nil {

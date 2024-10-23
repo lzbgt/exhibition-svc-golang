@@ -53,15 +53,7 @@ func CreateExibition(c *gin.Context, db *gorm.DB) {
 		return
 	}
 	exibition := models.Exibition{
-		ExibitionInput: models.ExibitionInput{
-			Description: input.Description,
-			Images:      input.Images,
-			Location:    input.Location,
-			Sponsors:    input.Sponsors,
-			Title:       input.Title,
-			Videos:      input.Videos,
-			Creator:     input.Creator,
-		},
+		ExibitionInput: input,
 	}
 
 	if result := db.Create(&exibition); result.Error != nil {

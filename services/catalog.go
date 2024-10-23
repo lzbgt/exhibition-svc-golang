@@ -63,14 +63,7 @@ func CreateExCatalog(c *gin.Context, db *gorm.DB) {
 	}
 	input.Eid = eid
 	catalog := models.ExCatalog{
-		ExCatalogInput: models.ExCatalogInput{
-			Eid:         input.Eid,
-			Pid:         input.Pid,
-			Name:        input.Name,
-			Description: input.Description,
-			Images:      input.Images,
-			Videos:      input.Videos,
-		},
+		ExCatalogInput: input,
 	}
 
 	if result := db.Create(&catalog); result.Error != nil {
