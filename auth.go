@@ -42,8 +42,9 @@ func Register(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
+	input.Password = string(hashedPassword)
 	// Create the user record
-	user := models.ExUser{ExUserInput: models.ExUserInput{Name: input.Name, Uname: input.Name, Password: string(hashedPassword)}}
+	user := models.ExUser{ExUserInput: input}
 	if err := db.Create(&user).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
 		return
