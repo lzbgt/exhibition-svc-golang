@@ -59,6 +59,12 @@ func IsLeafCatalog(db *gorm.DB, cid int) bool {
 	return count == 0
 }
 
+func IsCatalogHasItem(db *gorm.DB, cid int) bool {
+	var count int64
+	db.Model(&models.ExItem{}).Where("cid=?", cid).Count(&count)
+	return count > 0
+}
+
 // CreateExCatalog godoc
 // @Summary Create new catalog
 // @Tags catalog
@@ -93,6 +99,10 @@ func CreateExCatalog(c *gin.Context, db *gorm.DB) {
 		root := getRootCatalog(db, input.Pid, input.Eid)
 		if root.Pid != 0 {
 			rid = root.ID
+		}
+		if IsCatalogHasItem(db, input.Pid) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "类目下有单品, 不能创建子类目. 需删除其关联的所有单品"})
+			return
 		}
 	}
 
