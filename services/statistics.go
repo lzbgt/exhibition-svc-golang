@@ -269,10 +269,10 @@ func GetCatalogTrending(c *gin.Context, db *gorm.DB) {
 			"COALESCE(SUM(DISTINCT ex_amounts.amount), 0) as total_orders, "+
 			"COALESCE(SUM(DISTINCT ex_rates.rate), 0) as total_scores").
 		Where("ex_items.eid = ?", eid).
-		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id").
-		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id").
-		Joins("LEFT JOIN ex_catalogs ON ex_catalogs.id = ex_items.cid").
-		Group("ex_items.cid, ex_catalogs.name").
+		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id and ex_amounts.eid = ex_items.eid").
+		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id and ex_rates.eid = ex_items.eid").
+		Joins("inner JOIN ex_catalogs ON ex_catalogs.id = ex_items.cid").
+		Group("ex_items.cid, ex_catalogs.name").Debug().
 		Scan(&result)
 
 	c.JSON(http.StatusOK, &result)
