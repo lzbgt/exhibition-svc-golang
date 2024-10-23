@@ -63,6 +63,7 @@ type ExCatalogInput struct {
 type ExCatalog struct {
 	Base
 	ExCatalogInput
+	RootId int `json:"root_id"`
 }
 
 // Claims struct

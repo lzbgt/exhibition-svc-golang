@@ -35,6 +35,30 @@ func GetExCatalogs(c *gin.Context, db *gorm.DB) {
 	c.JSON(http.StatusOK, catalogs)
 }
 
+func getRootCatalog(db *gorm.DB, pid int, eid int) models.ExCatalog {
+	var catalog models.ExCatalog
+	query := `
+		WITH RECURSIVE parent_tree AS (
+			SELECT *
+			FROM ex_catalogs
+			WHERE id = ? and eid = ?
+			UNION ALL
+			SELECT t.*
+			FROM ex_catalogs t
+			INNER JOIN parent_tree pt ON t.id = pt.pid
+		)
+		SELECT * FROM parent_tree ORDER BY id limit 1;
+	`
+	db.Raw(query, pid, eid).Scan(&catalog)
+	return catalog
+}
+
+func IsLeafCatalog(db *gorm.DB, cid int) bool {
+	var count int64
+	db.Model(&models.ExCatalog{}).Where("pid=?", cid).Count(&count)
+	return count == 0
+}
+
 // CreateExCatalog godoc
 // @Summary Create new catalog
 // @Tags catalog
@@ -62,8 +86,19 @@ func CreateExCatalog(c *gin.Context, db *gorm.DB) {
 		return
 	}
 	input.Eid = eid
+
+	rid := 0
+
+	if input.Pid != 0 {
+		root := getRootCatalog(db, input.Pid, input.Eid)
+		if root.Pid != 0 {
+			rid = root.ID
+		}
+	}
+
 	catalog := models.ExCatalog{
 		ExCatalogInput: input,
+		RootId:         rid,
 	}
 
 	if result := db.Create(&catalog); result.Error != nil {

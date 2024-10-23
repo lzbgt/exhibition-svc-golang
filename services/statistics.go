@@ -230,7 +230,7 @@ func GetTopNRateItems(c *gin.Context, db *gorm.DB) {
 		Sum    float64
 	}
 
-	if result := db.Table("ex_rates").Select("ex_rates.iid, ex_items.name, SUM(rate) as sum").Joins("left join ex_items on ex_items.id=ex_rates.iid").Group("ex_rates.iid").Where("ex_rates.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
+	if result := db.Table("ex_rates").Select("ex_rates.iid, ex_items.name, ex_items.thumbnails as images ,SUM(rate) as sum").Joins("left join ex_items on ex_items.id=ex_rates.iid").Group("ex_rates.iid").Where("ex_rates.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "rate not found"})
 		return
 	}
@@ -256,19 +256,23 @@ func GetCatalogTrending(c *gin.Context, db *gorm.DB) {
 	}
 
 	type CatalogSummary struct {
-		Catalog     int
+		Cid         int
 		Name        string
 		TotalOrders int
 		TotalScores int
 	}
 
 	var result []CatalogSummary
+
 	db.Table("ex_items").
-		Select("ex_items.cid, ex_catalogs.name,SUM(ex_amounts.amount) as total_orders, SUM(ex_rates.rate) as total_scores").
-		Joins("left join ex_amounts on ex_amounts.iid = ex_items.id").
-		Joins("left join ex_rates on ex_rates.iid = ex_items.id").
-		Joins("left join ex_catalogs on ex_catalogs.id = ex_items.cid").
-		Group("ex_items.cid").
+		Select("ex_items.cid, ex_catalogs.name, "+
+			"COALESCE(SUM(DISTINCT ex_amounts.amount), 0) as total_orders, "+
+			"COALESCE(SUM(DISTINCT ex_rates.rate), 0) as total_scores").
+		Where("ex_items.eid = ?", eid).
+		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id").
+		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id").
+		Joins("LEFT JOIN ex_catalogs ON ex_catalogs.id = ex_items.cid").
+		Group("ex_items.cid, ex_catalogs.name").
 		Scan(&result)
 
 	c.JSON(http.StatusOK, &result)

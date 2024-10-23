@@ -17,7 +17,7 @@ import (
 // @Produce json
 // @Param eid path int true "models.Exibition ID"
 // @Param q query string false "full body search string in name/description"
-// @Param cid query int false "catalog id (leaf node)"
+// @Param cid query int false "catalog id"
 // @Success 200 {array} map[string]interface{}
 // @Router /api/{eid}/items [get]
 func GetExItems(c *gin.Context, db *gorm.DB) {
@@ -28,6 +28,19 @@ func GetExItems(c *gin.Context, db *gorm.DB) {
 	}
 
 	cid, _ := strconv.Atoi(c.Query("cid"))
+
+	var childIDs []int
+
+	db.Raw(`
+		WITH RECURSIVE child_tree AS (
+			SELECT id FROM ex_catalogs WHERE pid = ?
+			UNION ALL
+			SELECT n.id FROM ex_catalogs n
+			INNER JOIN child_tree ct ON n.pid = ct.id
+		)
+		SELECT id FROM child_tree;
+	`, cid).Debug().Scan(&childIDs)
+	childIDs = append(childIDs, cid)
 
 	var results []struct {
 		models.ExItem
@@ -44,7 +57,7 @@ func GetExItems(c *gin.Context, db *gorm.DB) {
 		Group("ex_items.id").
 		Where("ex_items.eid=? ", eid).Order("ex_items.id desc")
 	if cid > 0 {
-		query = query.Where("ex_items.cid = ?", cid)
+		query = query.Where("ex_items.cid in ?", childIDs)
 	}
 	if q != "" {
 		query = query.Where("(ex_items.name like ? or ex_items.description like ?)", q, q)
