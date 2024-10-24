@@ -151,12 +151,12 @@ func GetTopNAmountItems(c *gin.Context, db *gorm.DB) {
 	}
 
 	query := db.Table("ex_items").
-		Select("ex_items.id, ex_items.name, ex_items.images,ex_items.cid, ex_catalogs.name as cname, AVG(ex_rates.rate) as avg_rate, SUM(ex_amounts.amount) as sum_amount").
-		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id and ex_rates.eid=ex_items.eid").
-		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id and ex_amounts.eid=ex_items.eid").
+		Select("ex_items.id, ex_items.name, ex_items.images, ex_items.cid, ex_catalogs.name as cname, COALESCE(rates.avg_rate, 0) as avg_rate, COALESCE(amounts.total_amount, 0) as sum_amount").
 		Joins("LEFT JOIN ex_catalogs ON ex_items.cid = ex_catalogs.id and ex_catalogs.eid=ex_items.eid").
-		Group("ex_items.id").
-		Where("ex_items.eid=? ", eid).Order("sum_amount desc")
+		Joins("LEFT JOIN (SELECT iid, AVG(rate) as avg_rate FROM ex_rates WHERE eid = ? GROUP BY iid) as rates ON rates.iid = ex_items.id", eid).
+		Joins("LEFT JOIN (SELECT iid, SUM(amount) as total_amount FROM ex_amounts WHERE eid = ? GROUP BY iid) as amounts ON amounts.iid = ex_items.id", eid).
+		Where("ex_items.eid = ?", eid).
+		Order("sum_amount desc")
 
 	if result := query.Limit(topN).Scan(&results); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "amount not found"})
