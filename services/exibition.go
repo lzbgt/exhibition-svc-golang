@@ -104,14 +104,19 @@ func UpdateExibition(c *gin.Context, db *gorm.DB) {
 		return
 	}
 	// Bind the incoming JSON payload to the input struct
-	var input models.ExibitionInput
+	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	var fieldsToUpdate []string
+	for key := range input {
+		fieldsToUpdate = append(fieldsToUpdate, key)
+	}
+
 	// Use GORM’s Updates method to perform a partial update
-	if err := db.Model(&exibition).Updates(input).Error; err != nil {
+	if err := db.Model(&exibition).Select(fieldsToUpdate).Updates(input).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

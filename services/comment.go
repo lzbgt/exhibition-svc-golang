@@ -55,17 +55,27 @@ func CreateExComment(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var input models.ExCommentInput
+	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	input.Uid = claims.UserId
-	input.Eid = eid
+	input["uid"] = claims.UserId
+	input["eid"] = eid
+
+	var fieldsToUpdate []string
+	for key := range input {
+		fieldsToUpdate = append(fieldsToUpdate, key)
+	}
 
 	var comment models.ExComment
-	if result := db.Where("uid=? and iid=? and eid=?", input.Uid, input.Iid, input.Eid).First(&comment); result.Error != nil {
+	if result := db.Where("uid=? and iid=? and eid=?", input["uid"], input["iid"], input["eid"]).First(&comment); result.Error != nil {
+		var input models.ExCommentInput
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		comment = models.ExComment{ExCommentInput: input}
 		if result := db.Create(&comment); result.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result.Error})
@@ -75,6 +85,6 @@ func CreateExComment(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	db.Model(&comment).Updates(input)
+	db.Model(&comment).Select(fieldsToUpdate).Updates(input)
 	c.JSON(http.StatusOK, comment)
 }

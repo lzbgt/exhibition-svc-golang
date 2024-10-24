@@ -39,7 +39,7 @@ func GetExUsers(c *gin.Context, db *gorm.DB) {
 	}
 
 	var users []models.ExUser
-	query := db.Where("eid=?", eid).Order("create_time desc")
+	query := db.Where("eid=?", eid).Order("id desc")
 	if q != "" {
 		query = query.Where("name like ? or title like ? or uname like ? or mobile like ?", q, q, q, q)
 	}
@@ -203,16 +203,20 @@ func UpdateExUser(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
-	// Bind the incoming JSON payload to the input struct
-	var input models.ExUser
+
+	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	input.Eid = eid
+
+	var fieldsToUpdate []string
+	for key := range input {
+		fieldsToUpdate = append(fieldsToUpdate, key)
+	}
 
 	// Use GORM’s Updates method to perform a partial update
-	if err := db.Model(&user).Updates(input).Error; err != nil {
+	if err := db.Model(&user).Select(fieldsToUpdate).Debug().Updates(input).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

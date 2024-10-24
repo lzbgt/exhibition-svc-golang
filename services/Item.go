@@ -145,16 +145,21 @@ func UpdateExItem(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "item not found"})
 		return
 	}
-	// Bind the incoming JSON payload to the input struct
-	var input models.ExItemInput
+	var input map[string]interface{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	input.Eid, _ = strconv.Atoi(eid)
+
+	input["eid"] = eid
+
+	var fieldsToUpdate []string
+	for key := range input {
+		fieldsToUpdate = append(fieldsToUpdate, key)
+	}
 
 	// Use GORM’s Updates method to perform a partial update
-	if err := db.Model(&item).Updates(input).Error; err != nil {
+	if err := db.Model(&item).Select(fieldsToUpdate).Updates(input).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
