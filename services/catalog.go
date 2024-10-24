@@ -100,6 +100,7 @@ func CreateExCatalog(c *gin.Context, db *gorm.DB) {
 		if root.Pid != 0 {
 			rid = root.ID
 		}
+		// TODO: NEED PRD check if the parent catalog has any item
 		if IsCatalogHasItem(db, input.Pid) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "类目下有单品, 不能创建子类目. 需删除其关联的所有单品"})
 			return

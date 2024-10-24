@@ -89,10 +89,11 @@ func CreateExItem(c *gin.Context, db *gorm.DB) {
 		ExItemInput: input,
 	}
 
-	if !IsLeafCatalog(db, input.Cid) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "必须选择叶子类目"})
-		return
-	}
+	// TODO: NEED PRD check catalog is leaf
+	// if !IsLeafCatalog(db, input.Cid) {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "必须选择叶子类目"})
+	// 	return
+	// }
 
 	if result := db.Create(&item); result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": result.Error})

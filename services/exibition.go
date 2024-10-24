@@ -153,7 +153,7 @@ func DeleteExibition(c *gin.Context, db *gorm.DB) {
 func GetActiveExibition(c *gin.Context, db *gorm.DB) {
 	var exibition models.Exibition
 	if result := db.Where("is_active=?", true).Order("update_time desc").First(&exibition); result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "exibition not found"})
+		c.Status(200)
 		return
 	}
 	c.JSON(http.StatusOK, exibition)
