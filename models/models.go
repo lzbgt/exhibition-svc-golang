@@ -55,9 +55,11 @@ type ExCatalogInput struct {
 	Pid         int             `json:"pid" gorm:"index,default:0"`
 	Eid         int             `json:"eid" gorm:"index"`
 	Name        string          `json:"name"`
+	Title       string          `json:"title"`
 	Description string          `json:"description"`
 	Images      json.RawMessage `json:"images" gorm:"type:json"`
 	Videos      json.RawMessage `json:"videos" gorm:"type:json"`
+	Banner      json.RawMessage `json:"banner" gorm:"type:json"`
 }
 
 type ExCatalog struct {
