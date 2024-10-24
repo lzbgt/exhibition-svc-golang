@@ -51,9 +51,9 @@ func GetExItems(c *gin.Context, db *gorm.DB) {
 
 	query := db.Table("ex_items").
 		Select("ex_items.*, ex_catalogs.name as cname, AVG(ex_rates.rate) as avg_rate, SUM(ex_amounts.amount) as sum_amount").
-		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id").
-		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id").
-		Joins("LEFT JOIN ex_catalogs ON ex_items.cid = ex_catalogs.id").
+		Joins("LEFT JOIN ex_rates ON ex_rates.iid = ex_items.id and ex_rates.eid=ex_items.eid").
+		Joins("LEFT JOIN ex_amounts ON ex_amounts.iid = ex_items.id and ex_amounts.eid=ex_items.eid").
+		Joins("LEFT JOIN ex_catalogs ON ex_items.cid = ex_catalogs.id and ex_catalogs.eid=ex_items.eid").
 		Group("ex_items.id").
 		Where("ex_items.eid=? ", eid).Order("ex_items.id desc")
 	if cid > 0 {
