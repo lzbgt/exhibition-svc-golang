@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"go-http-svc/models"
 	"net/http"
 	"strconv"
@@ -55,38 +56,26 @@ func CreateExComment(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var input_ map[string]interface{}
-	if err := c.ShouldBindJSON(&input_); err != nil {
+	var input models.ExCommentInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fmt.Println(err)
 		return
 	}
-
-	input := ProcessInput(input_).(map[string]interface{})
-
-	input["uid"] = claims.UserId
-	input["eid"] = eid
-
-	var fieldsToUpdate []string
-	for key := range input {
-		fieldsToUpdate = append(fieldsToUpdate, key)
-	}
+	input.Uid = claims.UserId
 
 	var comment models.ExComment
-	if result := db.Where("uid=? and iid=? and eid=?", input["uid"], input["iid"], input["eid"]).First(&comment); result.Error != nil {
-		var input models.ExCommentInput
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+	if result := db.Where("uid=? and iid=? and eid=?", input.Uid, input.Iid, input.Eid).First(&comment); result.Error != nil {
 		comment = models.ExComment{ExCommentInput: input}
 		if result := db.Create(&comment); result.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result.Error})
+			fmt.Println(result.Error)
 			return
 		}
 		c.JSON(http.StatusOK, comment)
 		return
 	}
 
-	db.Model(&comment).Select(fieldsToUpdate).Updates(input)
+	db.Model(&comment).Updates(input)
 	c.JSON(http.StatusOK, comment)
 }
