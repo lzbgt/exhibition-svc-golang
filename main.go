@@ -82,7 +82,9 @@ func initDB() {
 // @in header
 // @description Provide your JWT token in the format: {your_token}
 func main() {
+	(&services.Window{}).DisableConsoleQuickEdit()
 	extractTemplateIfNotExists()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

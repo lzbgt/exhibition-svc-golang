@@ -188,6 +188,7 @@ func UpdateExCatalog(c *gin.Context, db *gorm.DB) {
 
 	// Use GORM’s Updates method to perform a partial update
 	if err := db.Model(&catalog).Select(fieldsToUpdate).Updates(input).Error; err != nil {
+		fmt.Println("error: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
