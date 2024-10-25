@@ -9,8 +9,6 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-type Window struct{}
-
 func (w *Window) DisableConsoleQuickEdit() {
 	kernel32 := windows.NewLazyDLL("kernel32.dll")
 	proc := kernel32.NewProc("SetConsoleMode")
