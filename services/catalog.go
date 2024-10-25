@@ -172,11 +172,12 @@ func UpdateExCatalog(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "catalog not found"})
 		return
 	}
-	var input map[string]interface{}
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var input_ map[string]interface{}
+	if err := c.ShouldBindJSON(&input_); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	input := ProcessInput(input_).(map[string]interface{})
 
 	input["eid"] = eid
 

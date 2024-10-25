@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-http-svc/models"
 	"log"
@@ -117,4 +118,25 @@ func generateRandomUsername(length int) string {
 		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+func ProcessInput(data interface{}) interface{} {
+	switch v := data.(type) {
+	case []interface{}:
+		// Convert array to JSON string
+		jsonStr, err := json.Marshal(v)
+		if err != nil {
+			return nil
+		}
+		return string(jsonStr)
+	case map[string]interface{}:
+		// Process nested map
+		result := make(map[string]interface{})
+		for key, value := range v {
+			result[key] = ProcessInput(value)
+		}
+		return result
+	default:
+		return v
+	}
 }

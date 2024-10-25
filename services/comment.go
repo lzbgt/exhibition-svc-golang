@@ -55,11 +55,13 @@ func CreateExComment(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var input map[string]interface{}
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var input_ map[string]interface{}
+	if err := c.ShouldBindJSON(&input_); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	input := ProcessInput(input_).(map[string]interface{})
 
 	input["uid"] = claims.UserId
 	input["eid"] = eid
