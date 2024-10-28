@@ -188,6 +188,7 @@ func GetTopNOrdersItems(c *gin.Context, db *gorm.DB) {
 	var results []struct {
 		ID     int
 		Name   string
+		Title  string
 		Sum    int
 		Orders int
 	}
