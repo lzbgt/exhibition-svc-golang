@@ -196,7 +196,7 @@ func GetTopNOrdersItems(c *gin.Context, db *gorm.DB) {
 	// 	c.JSON(http.StatusNotFound, gin.H{"error": "amount not found"})
 	// 	return
 	// }
-	if result := db.Table("ex_users").Select("ex_users.id, ex_users.name, SUM(ex_amounts.amount) as sum, COUNT(ex_amounts.id) as orders").Joins("left join ex_amounts on ex_amounts.uid=ex_users.id").Group("ex_users.id").Where("ex_users.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
+	if result := db.Table("ex_users").Select("ex_users.id, ex_users.name, ex_users.title, SUM(ex_amounts.amount) as sum, COUNT(ex_amounts.id) as orders").Joins("left join ex_amounts on ex_amounts.uid=ex_users.id").Group("ex_users.id").Where("ex_users.eid=?", eid).Order("sum desc").Limit(topN).Scan(&results); result.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "amount not found"})
 		return
 	}
