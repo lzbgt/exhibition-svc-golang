@@ -50,7 +50,22 @@ func CreateExAmount(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	db.Model(&amount).Updates(input)
+	var input_ map[string]interface{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	_input := ProcessInput(input_).(map[string]interface{})
+	_input["uid"] = claims.UserId
+	_input["eid"] = eid
+
+	var fieldsToUpdate []string
+	for key := range _input {
+		fieldsToUpdate = append(fieldsToUpdate, key)
+	}
+
+	db.Model(&amount).Select(fieldsToUpdate).Updates(_input)
 	c.JSON(http.StatusOK, amount)
 }
 
