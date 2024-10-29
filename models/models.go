@@ -98,7 +98,7 @@ type ExRate struct {
 
 type ExAmountInput struct {
 	Eid    int `json:"eid"`
-	Amount int `json:"amount" binding:"required" gorm:"default:0"`
+	Amount int `json:"amount" gorm:"default:0"`
 	Uid    int `json:"uid" gorm:"uniqueIndex:idx_amount_user_per_item"`
 	Iid    int `json:"iid" gorm:"uniqueIndex:idx_amount_user_per_item"`
 }
