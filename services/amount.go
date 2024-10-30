@@ -29,15 +29,6 @@ func CreateExAmount(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	// var input models.ExAmountInput
-	// if err := c.ShouldBindJSON(&input); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// input.Uid = claims.UserId
-	// input.Eid = eid
-
 	var input_ map[string]interface{}
 	if err := c.ShouldBindJSON(&input_); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
