@@ -309,8 +309,8 @@ func GetItemsRateDistribution(c *gin.Context, db *gorm.DB) {
 	db.Raw(`
 		SELECT 
 			CASE 
-				WHEN avg_score BETWEEN 8 AND 10 THEN '优秀' 
-				WHEN avg_score BETWEEN 7 AND 7.99 THEN '良好' 
+				WHEN avg_score BETWEEN 9 AND 10 THEN '优秀' 
+				WHEN avg_score BETWEEN 7 AND 8.99 THEN '良好' 
 				WHEN avg_score BETWEEN 6.01 AND 6.99 THEN '合格' 
 				WHEN avg_score BETWEEN 0 AND 6 THEN '不合格' 
 			END AS category,
