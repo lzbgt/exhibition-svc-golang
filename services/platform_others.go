@@ -1,3 +1,6 @@
+// Author: Bruce Lu
+// Email: lzbgt_AT_icloud.com
+
 //go:build !windows
 // +build !windows
 
