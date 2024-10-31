@@ -111,7 +111,7 @@ func GetExcellentItems(c *gin.Context, db *gorm.DB) {
 		Iid     int     `json:"iid"`
 		AvgRate float64 `json:"avg_rate"`
 	}
-	if result := db.Table("ex_rates").Select("ex_rates.iid, AVG(ex_rates.rate) as avg_rate").Where("eid = ?", eid).Having("avg_rate > ?", rate).Order("avg_rate desc").Group("iid").Scan(&results); result.Error != nil {
+	if result := db.Table("ex_rates").Select("ex_rates.iid, AVG(ex_rates.rate) as avg_rate").Where("eid = ?", eid).Having("avg_rate >= ?", rate).Order("avg_rate desc").Group("iid").Scan(&results); result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error})
 		return
 	}
@@ -311,8 +311,8 @@ func GetItemsRateDistribution(c *gin.Context, db *gorm.DB) {
 			CASE 
 				WHEN avg_score BETWEEN 9 AND 10 THEN '优秀' 
 				WHEN avg_score BETWEEN 7 AND 8.99 THEN '良好' 
-				WHEN avg_score BETWEEN 6.01 AND 6.99 THEN '合格' 
-				WHEN avg_score BETWEEN 0 AND 6 THEN '不合格' 
+				WHEN avg_score BETWEEN 6 AND 6.99 THEN '合格' 
+				WHEN avg_score BETWEEN 0 AND 5.99 THEN '不合格' 
 			END AS category,
 			COUNT(iid) AS count
 		FROM (
