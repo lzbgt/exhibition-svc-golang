@@ -4,7 +4,6 @@
 package services
 
 import (
-	"fmt"
 	"go-http-svc/models"
 	"net/http"
 	"strconv"
@@ -32,25 +31,19 @@ func CreateExAmount(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	var input_ map[string]interface{}
-	if err := c.ShouldBindJSON(&input_); err != nil {
+	var input models.ExAmountInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	_input := ProcessInput(input_).(map[string]interface{})
-	_input["uid"] = claims.UserId
-	_input["eid"] = eid
-	fmt.Println("input: ", _input)
+	input.Eid = eid
+	input.Uid = claims.UserId
 
 	var amount models.ExAmount
-	if result := db.Where("uid=? and iid=? and eid=?", claims.UserId, _input["iid"], _input["eid"]).First(&amount); result.Error != nil {
+	if result := db.Where("uid=? and iid=? and eid=?", claims.UserId, input.Iid, input.Eid).First(&amount); result.Error != nil {
 		amount = models.ExAmount{
-			ExAmountInput: models.ExAmountInput{
-				Uid:    claims.UserId,
-				Eid:    eid,
-				Amount: int(_input["amount"].(float64)),
-			},
+			ExAmountInput: input,
 		}
 		if result := db.Create(&amount); result.Error != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": result.Error})
@@ -59,13 +52,12 @@ func CreateExAmount(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusOK, amount)
 		return
 	}
-
-	var fieldsToUpdate []string
-	for key := range _input {
-		fieldsToUpdate = append(fieldsToUpdate, key)
+	if input.Amount != 0 {
+		db.Model(&amount).Updates(input)
+	} else {
+		db.Model(&amount).Update("amount", 0)
 	}
 
-	db.Model(&amount).Select(fieldsToUpdate).Updates(_input)
 	c.JSON(http.StatusOK, amount)
 }
 
